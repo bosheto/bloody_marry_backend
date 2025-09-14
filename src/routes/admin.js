@@ -6,9 +6,9 @@ const admin_router = express.Router()
 admin_router.get('/users', async (req, res) => {
     try {
         const users = await db.get_all_users()
-        res.json(use)
+        res.json(users)
     } catch (e) {
-        return res.status(500).send()
+        return res.status(500).send(e)
     }
 })
 
