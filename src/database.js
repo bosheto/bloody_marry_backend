@@ -61,9 +61,22 @@ const get_donor_by_user_id = (user_id) => {
     })
 }
 
+const get_donor_by_email = (email) => {
+    return new Promise ((resolve, reject) => {
+        pool.query(
+            `SELECT d.* FROM donors d JOIN users u ON d.user_id = u.id WHERE u.email = '${email}'`,
+            (error, results) => {
+                if (error) {
+                    return reject(error)
+                }
+                resolve(results[0])
+            }
+        )
+    })
+}
 
 // Update user 
-const update_user = (user) => {
+const update_user_new = (user) => {
     return new Promise ((resolve, reject) => {
         pool.query(`UPDATE users SET email = '${user.email}', new = ${user.new}  WHERE id = ${user.id}`, 
             (error, results) => {
@@ -144,15 +157,69 @@ const get_role_name = (id) => {
     })
 }
 
+const change_donor_city = (email, city) => {
+    return new Promise ((resolve, reject) => {
+        pool.query(
+            `UPDATE donors d JOIN users u ON d.user_id = u.id SET d.city = '${city}' WHERE u.email = '${email}'`,
+            (error, results) => {
+                if (error) {
+                    reject(error)
+                }
+                resolve(results)
+            }
+        )
+    })
+}
+
+const update_user_credentials = (user) => {
+    return new Promise ((resolve, reject) => {
+       if(user.email && !user.password) {
+            pool.query(
+                `UPDATE users SET email = '${user.email}' WHERE id =  ${user.id}`,
+                (error, results) => {
+                    if (error) {
+                        return reject(error)
+                    }
+                    resolve(results)
+                }
+            )
+       } else if (!user.email && user.password) {
+            pool.query(
+                `UPDATE users SET password = '${user.password}' WHERE id = ${user.id}`,
+                (error, results) => {
+                        if (error) {
+                            return reject(error)
+                        }
+                        resolve(results)
+                    }
+            )
+       } else {
+            pool.query(
+                `UPDATE users SET email = '${user.email}', password = '${user.password}' WHERE id = ${user.id}`,
+                (error, results) => {
+                        if (error) {
+                            return reject(error)
+                        }
+                        resolve(results)
+                }
+            )
+       }
+    })
+}
+
+
 module.exports = {
     get_all_users,
     get_user_by_uuid,
     create_donor,
-    update_user,
+    update_user_new,
     create_user,
     get_user_by_email,
     delete_user,
     delete_donor,
     get_donor_by_user_id,
     get_role_name,
+    get_donor_by_email,
+    change_donor_city,
+    update_user_credentials,
 }
