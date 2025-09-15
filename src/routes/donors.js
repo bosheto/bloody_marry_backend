@@ -3,7 +3,7 @@ const db = require('../database')
 const uuidV6 = require('uuid').v6
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-
+const authenticate_user = require('../middleware/auth_middleware').authenticate_jwt
 
 const donor_router = express.Router()
 
@@ -40,26 +40,35 @@ donor_router.post('/register', async (req, res) => {
 })
 
 // Get user data
-donor_router.get('/user/:uuid', async (req, res) => {
-    const uuid = req.params.uuid
+donor_router.get('/user/:email', authenticate_user,  async (req, res) => {
+    const email = req.params.email
+
+    const token = req.user
+    if(email !== token.email) { 
+        res.status(401).json({message: "You don't have access to this resource"})
+    }
 
     try {
-        const user = await db.get_user_by_uuid(uuid)
+        const user = await db.get_user_by_email(email)
         res.json(user)
     } catch (e) {
-        res.status(404).json({message: `User with uuid ${uuid} not found.`})
+        res.status(404).json({message: `User with email ${email} not found.`})
     }
 })
 
 // Get donor data
-donor_router.get('/:uuid', async (req, res) => {
-    const uuid = req.params.uuid
+donor_router.get('/:email', authenticate_user, async (req, res) => {
+    const email = req.params.email
+
+    const token = req.user
+    if(email !== token.email) { 
+        res.status(401).json({message: "You don't have access to this resource"})
+    }
 
     try {
-        const user = await db.get_user_by_uuid(uuid)
-        
+        const user = await db.get_user_by_email(email)
         if(user === undefined) {
-            res.status(404).json({message: `No user with uuid ${uuid}`})
+            res.status(404).json({message: `No user with email ${email}`})
         }
 
         const donor = await db.get_donor_by_user_id(user.id)
@@ -69,17 +78,22 @@ donor_router.get('/:uuid', async (req, res) => {
 
         res.status(200).json(donor)
     } catch (e) {
-        res.status(500).json({message: e})
+        res.status(500).json({message: 'Internal server error'})
     }
 
 })
 
 // Configure donor
-donor_router.post('/init/:uuid', async (req, res) => {
-    const uuid = req.params.uuid
+donor_router.post('/init/:email', authenticate_user, async (req, res) => {
+    const email = req.params.email
     
+    const token = req.user
+    if(email !== token.email) { 
+        res.status(401).json({message: "You don't have access to this resource"})
+    }
+
     try{
-        const user = await db.get_user_by_uuid(uuid)
+        const user = await db.get_user_by_email(email)
 
         if(user.new == 0) {
             return res.status(400).json({message: 'Donor already initialized'})
@@ -130,20 +144,18 @@ donor_router.put('/:uuid', async (req, res) => {
 })
 
 // Delete donor
-donor_router.delete('/:uuid', async (req, res) => {
-    const uuid = req.params.uuid
+donor_router.delete('/:email', authenticate_user, async (req, res) => {
+    const email = req.params.email
     
    try {
-        const user = await db.get_user_by_uuid(uuid)
+        const user = await db.get_user_by_email(email)
         
         await db.delete_donor(user.id)
-        await db.delete_user(uuid)
+        await db.delete_user(user.uuid)
         res.status(200).json({message: 'user deleted'})
    } catch (e) {
-        if (e === undefined){
-            return res.status(404).json({message: `No user found with uuid: ${uuid}`})
-        }
-        res.status(500).json({message: e})
+        return res.status(404).json({message: `No user found with email: ${email}`})
+
    }
 }) 
 
@@ -170,20 +182,23 @@ donor_router.post('/login', async (req, res) => {
                     role: role_name.role_name
                 }
                 const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: "1h"})
-                res.json({message: 'Login successful ', token})
+                res.json({message: 'Login successful ', token, uuid: user.uuid})
             } else {
                 res.status(401).json({message: "Wrong credentials"})
             }
         } catch (e) {
-            res.status(500).json({message: e})
+            res.status(500).json({message: "internal server error"})
         }
 
     } catch (e) {
-        res.status(500).json({message: e})
+        res.status(500).json({message: 'internal server error'})
     }
 
 
 
 })
+
+// Utils 
+
 
 module.exports = donor_router
