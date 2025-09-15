@@ -1,19 +1,13 @@
 const express = require('express')
 const db = require('../database')
 const uuidV6 = require('uuid').v6
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
 
 const donor_router = express.Router()
 
 donor_router.use(express.json())
-
-// Utils 
-const check_user_by_uuid = async (uuid) => {
-    const user = await db.get_user_by_uuid(uuid)
-    if (user) {
-        return true
-    } 
-    return false 
-}
 
 donor_router.get('/', (req, res) => {
     res.send('Ok')
@@ -23,10 +17,13 @@ donor_router.get('/', (req, res) => {
 donor_router.post('/register', async (req, res) => {
    
     try {
+        
+        const hashedPassword = await bcrypt.hash(req.body.password, 10)
+
         const user = {
             uuid: uuidV6(),
             email: req.body.email,
-            password: req.body.password,
+            password: hashedPassword,
             role: 1,
         }
 
@@ -138,17 +135,55 @@ donor_router.delete('/:uuid', async (req, res) => {
     
    try {
         const user = await db.get_user_by_uuid(uuid)
-
-        if(user === undefined) {
-            return res.status(404).json({message: `No user found with uuid: ${uuid}`})
-        }
         
         await db.delete_donor(user.id)
         await db.delete_user(uuid)
         res.status(200).json({message: 'user deleted'})
    } catch (e) {
+        if (e === undefined){
+            return res.status(404).json({message: `No user found with uuid: ${uuid}`})
+        }
         res.status(500).json({message: e})
    }
 }) 
+
+// Login
+donor_router.post('/login', async (req, res) => {
+    const email = req.body.email
+    const password = req.body.password
+
+    try {
+
+        const user = await db.get_user_by_email(email)
+        
+        if (!user) {
+            return res.status(404).json({message: `No user found with email ${email}`})
+        }
+        const role_name = await db.get_role_name(user.role)
+        
+        try {
+
+            if (await bcrypt.compare(password, user.password)) {
+                const payload = {
+                    id: user.uuid,
+                    email: email,
+                    role: role_name.role_name
+                }
+                const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: "1h"})
+                res.json({message: 'Login successful ', token})
+            } else {
+                res.status(401).json({message: "Wrong credentials"})
+            }
+        } catch (e) {
+            res.status(500).json({message: e})
+        }
+
+    } catch (e) {
+        res.status(500).json({message: e})
+    }
+
+
+
+})
 
 module.exports = donor_router

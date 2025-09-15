@@ -10,7 +10,7 @@ const BASE_URL = process.env.WS_BASE_URL
 
 const app = express()
 
-// Middleware
+// App config
 app.use(express.json())
 
 // Routes 

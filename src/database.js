@@ -131,6 +131,19 @@ const delete_donor = (user_id) => {
     })
 }
 
+const get_role_name = (id) => {
+    return new Promise ((resolve, reject) => {
+        pool.query(
+            `SELECT role_name FROM roles WHERE id = ${id}`,
+        (error, results) => {
+            if(error){
+                return reject(error)
+            }
+            resolve(results[0])
+        })
+    })
+}
+
 module.exports = {
     get_all_users,
     get_user_by_uuid,
@@ -141,4 +154,5 @@ module.exports = {
     delete_user,
     delete_donor,
     get_donor_by_user_id,
+    get_role_name,
 }
