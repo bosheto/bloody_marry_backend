@@ -47,61 +47,6 @@ const get_user_by_email = (email) => {
     })
 }
 
-const get_donor_by_user_id = (user_id) => {
-    return new Promise ((resolve, reject) => {
-        pool.query(
-            `SELECT * FROM donors WHERE user_id = ${user_id}`,
-            (error, results) => {
-                if (error) {
-                    return reject(error)
-                }
-                resolve(results[0])
-            }
-        )
-    })
-}
-
-const get_donor_by_email = (email) => {
-    return new Promise ((resolve, reject) => {
-        pool.query(
-            `SELECT d.* FROM donors d JOIN users u ON d.user_id = u.id WHERE u.email = '${email}'`,
-            (error, results) => {
-                if (error) {
-                    return reject(error)
-                }
-                resolve(results[0])
-            }
-        )
-    })
-}
-
-// Update user 
-const update_user_new = (user) => {
-    return new Promise ((resolve, reject) => {
-        pool.query(`UPDATE users SET email = '${user.email}', new = ${user.new}  WHERE id = ${user.id}`, 
-            (error, results) => {
-                if (error) {
-                    return reject(error)
-                }
-                resolve({message: "User updated"})
-            }
-        )
-    })
-}
-
-const create_donor = (donor) => {
-    return new Promise ((resolve, reject) => {
-        pool.query(
-            `INSERT INTO donors (user_id, dob, city, gender) 
-            VALUES (${donor.user_id}, '${donor.dob}', '${donor.city}', '${donor.gender}')`, (error, results) => {
-                if (error) {
-                    return reject(error)
-                }
-                resolve({message: 'Donor created'})
-            })
-    })
-}
-
 const create_user = (user) => {
     return new Promise ((resolve, reject) => {
         pool.query(
@@ -130,20 +75,6 @@ const delete_user = (uuid) => {
     })
 }
 
-const delete_donor = (user_id) => {
-    return new Promise ((resolve, reject) => {
-        pool.query(
-            `DELETE FROM donors WHERE user_id = ${user_id}`,
-            (error, results) => {
-                if (error) {
-                    return reject(error)
-                }
-                resolve({message: "donor deleted"})
-            }
-        )
-    })
-}
-
 const get_role_name = (id) => {
     return new Promise ((resolve, reject) => {
         pool.query(
@@ -154,20 +85,6 @@ const get_role_name = (id) => {
             }
             resolve(results[0])
         })
-    })
-}
-
-const change_donor_city = (email, city) => {
-    return new Promise ((resolve, reject) => {
-        pool.query(
-            `UPDATE donors d JOIN users u ON d.user_id = u.id SET d.city = '${city}' WHERE u.email = '${email}'`,
-            (error, results) => {
-                if (error) {
-                    reject(error)
-                }
-                resolve(results)
-            }
-        )
     })
 }
 
@@ -207,19 +124,29 @@ const update_user_credentials = (user) => {
     })
 }
 
+const delete_donor = (donor) => {
+    return new Promise ((resolve, reject) => {
+        pool.query(
+            `DELETE FROM donors WHERE user_id = ${user_id}`,
+            (error, results) => {
+                if (error) {
+                    return reject(error)
+                }
+                resolve({message: "donor deleted"})
+            }
+        )
+    })
+}
 
 module.exports = {
     get_all_users,
     get_user_by_uuid,
-    create_donor,
-    update_user_new,
+    // create_donor,
+    // update_user_new,
+    delete_donor,
     create_user,
     get_user_by_email,
     delete_user,
-    delete_donor,
-    get_donor_by_user_id,
     get_role_name,
-    get_donor_by_email,
-    change_donor_city,
     update_user_credentials,
 }

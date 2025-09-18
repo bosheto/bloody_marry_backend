@@ -3,8 +3,10 @@ const db = require('../database')
 const uuidV6 = require('uuid').v6
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const authenticate_user = require('../middleware/auth_middleware').authenticate_jwt
+const authenticate_user = require('../middlewares/auth_middleware').authenticate_jwt
 
+const donor_model = require('../models/donor_model')
+const user_controller = require('../controllers/user_controller')
 
 const user_router = express.Router()
 
@@ -35,21 +37,7 @@ user_router.post('/register', async (req, res) => {
     }
 })
 
-user_router.get('/:email', authenticate_user,  async (req, res) => {
-    const email = req.params.email
-
-    const token = req.user
-    if(email !== token.email) { 
-        res.status(401).json({message: "You don't have access to this resource"})
-    }
-
-    try {
-        const user = await db.get_user_by_email(email)
-        res.json(user)
-    } catch (e) {
-        res.status(404).json({message: `User with email ${email} not found.`})
-    }
-})
+user_router.get('/:email', authenticate_user, user_controller.get_by_email)
 
 user_router.post('/login', async (req, res) => {
     const email = req.body.email
@@ -150,7 +138,8 @@ user_router.delete('/:email', authenticate_user, async (req, res) => {
 }) 
 
 const delete_donor = async (user) => {
-    await db.delete_donor(user.id)
+    // TODO make this a transaction
+    await donor_model.remove(user.id)
     await db.delete_user(user.uuid)
 } 
 
