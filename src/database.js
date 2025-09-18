@@ -92,8 +92,8 @@ const update_user_new = (user) => {
 const create_donor = (donor) => {
     return new Promise ((resolve, reject) => {
         pool.query(
-            `INSERT INTO donors (user_id, age, city, gender) 
-            VALUES (${donor.user_id}, ${donor.age}, '${donor.city}', '${donor.gender}')`, (error, results) => {
+            `INSERT INTO donors (user_id, dob, city, gender) 
+            VALUES (${donor.user_id}, '${donor.dob}', '${donor.city}', '${donor.gender}')`, (error, results) => {
                 if (error) {
                     return reject(error)
                 }

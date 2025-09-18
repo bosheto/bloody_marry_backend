@@ -86,7 +86,6 @@ user_router.post('/login', async (req, res) => {
     }
 })
 
-// TODO add check for empty payload
 // Update user
 user_router.put('/:email', authenticate_user, async (req, res) => {
     const email = req.params.email
@@ -95,6 +94,10 @@ user_router.put('/:email', authenticate_user, async (req, res) => {
     const token = req.user
     if(email !== token.email) { 
         return res.status(401).json({message: "You don't have access to this resource"})
+    }
+
+    if (!req.body || Object.keys(req.body).length === 0){
+        return res.status(402).json({message: 'Body cannot be empty'})
     }
 
     const caller = await db.get_user_by_email(email)

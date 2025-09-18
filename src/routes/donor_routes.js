@@ -32,7 +32,6 @@ donor_router.get('/:email', authenticate_user, async (req, res) => {
 
 })
 
-// TODO use date of birth instead of age
 // Configure donor
 donor_router.post('/init/:email', authenticate_user, async (req, res) => {
     const email = req.params.email
@@ -51,7 +50,7 @@ donor_router.post('/init/:email', authenticate_user, async (req, res) => {
         
         const donor = {
             user_id: user.id,
-            age: req.body.age,
+            dob: req.body.dob,
             city: req.body.city,
             gender: req.body.gender
         }
@@ -63,7 +62,7 @@ donor_router.post('/init/:email', authenticate_user, async (req, res) => {
         res.status(201).json({message: "Donor created"})
 
     } catch (e) {
-        res.status(400).json(e)
+        res.status(400).json({message: "Wrong data inserted", e})
     }
 })
 
