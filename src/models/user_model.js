@@ -13,7 +13,7 @@ const create = async (user) => {
     try {
         connection = await mysql.createConnection(connection_data)
         await connection.query(
-            `INSERT INTO users (uuid, email, password, role) VALUES ('${user.uuid}', '${user.email}', '${user.password}', '${user.role}')`,
+            `INSERT INTO users (email, password, role) VALUES ('${user.email}', '${user.password}', '${user.role}')`,
         )
     }catch (e) {
         throw e
@@ -56,7 +56,7 @@ const get_role_name = async (id) => {
     }
 }
 
-
+//TODO Move the logic for checking if password or email is not present to controller
 const update_credentials = async (user) => {
     let connection
     try {
@@ -86,20 +86,6 @@ const update_credentials = async (user) => {
     }
 } 
 
-const remove = async(uuid) => {
-    let connection
-    try {
-        connection = await mysql.createConnection(connection_data)
-        await connection.query(
-            `DELETE FROM users WHERE uuid = ?`,
-            [uuid]
-        )
-    } catch (e) {
-        throw e
-    } finally {
-        if(connection) connection.end()
-    }
-}
 
 const remove_donor = async(user) => {
     let connection
@@ -133,5 +119,4 @@ module.exports = {
     get_role_name,
     update_credentials,
     remove_donor,
-    remove
 }
