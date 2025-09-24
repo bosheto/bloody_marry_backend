@@ -17,11 +17,12 @@ const get_by_email = async (req, res) => {
     
             res.status(200).json(donor)
         } catch (e) {
-            res.status(500).json({message: 'Internal server error', e})
+            res.status(500).json({message: 'Internal server error'})
         }
     
-    }
+}
 
+// TODO need input verification
 const init = async (req, res) => {
     const email = req.params.email
         
@@ -33,7 +34,7 @@ const init = async (req, res) => {
         try{
             const user = await user_model.get_by_email(email)
 
-            if(user.new == 0) {
+            if(user.new === 0) {
                 return res.status(400).json({message: 'Donor already initialized'})
             }
             
@@ -67,10 +68,11 @@ const update = async (req, res) => {
         if (new_city !== undefined)
         {
             await donor_model.change_city(email, new_city)
+            return res.status(200).json({message: "Success"})
         }
-        res.json({message: "Success"})
+        res.status(400).json({message: 'Must provide city'})
     } catch (e) {
-        res.status(500).send()
+        res.status(500).json({message: 'Internal server error'})
     }
 }
 
