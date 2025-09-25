@@ -1,12 +1,7 @@
 
 const mysql = require('mysql2/promise')
+const { connection_data } = require('./model_globals') 
 
-const connection_data = {
-    host: process.env.DB_ADDRESS,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
-}
 
 const create = async (user) => {
     let connection
@@ -113,10 +108,28 @@ const remove_donor = async(user) => {
     }
 }
 
+const update_login_date = async (user_id, login_timestamp) => {
+    let connection 
+    try {
+        connection = await mysql.createConnection(connection_data)
+
+        connection.query(
+            'UPDATE users SET last_login = ? WHERE id = ?',
+            [login_timestamp, user_id]
+        )
+        return 
+    } catch (e) {
+        throw e
+    } finally {
+        if (connection) connection.end
+    }
+}
+
 module.exports = {
     get_by_email,
     create,
     get_role_name,
     update_credentials,
     remove_donor,
+    update_login_date
 }

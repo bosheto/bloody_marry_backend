@@ -1,9 +1,8 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
-
 const user_model = require('../models/user_model')
-
+const { getDateTimeForDB } = require('../utils')
 
 const get_by_email = async (req, res) => {
     const email = req.params.email
@@ -67,8 +66,6 @@ const login = async (req, res) => {
         }
         const role_name = await user_model.get_role_name(user.role)
         
-        // try {
-
             if (await bcrypt.compare(password, user.password)) {
                 const payload = {
                     id: user.id,
@@ -76,13 +73,13 @@ const login = async (req, res) => {
                     role: role_name.role_name
                 }
                 const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: "1h"})
+                await user_model.update_login_date(user.id, getDateTimeForDB())
+                
                 return res.status(200).json({message: 'Login successful ', token})
             } else {
                 return res.status(401).json({message: "Wrong credentials"})
             }
-        // } catch (e) {
-        //     res.status(500).json({message: "internal server error"})
-        // }
+    
 
     } catch (e) {
         res.status(500).json({message: 'internal server error'})

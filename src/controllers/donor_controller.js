@@ -76,10 +76,58 @@ const update = async (req, res) => {
     }
 }
 
+const get_requests = async (req, res) => {
+
+}
+
+const get_request = async (req, res) => {
+    
+}
+
+const create_request = async (req, res) => {
+    
+    const token = req.user
+    if(!token) { 
+        return res.status(401).json({message: "You need to be logged in to create a new request"})
+    }
+
+    // TODO add input verification
+    const donor_request = {
+        message: req.body.message,
+        hospital: req.body.hospital,
+        donation_point: req.body.donation_point,
+        amount: req.body.amount,
+        patient: req.body.patient,
+        creator: token.id
+    }
+    
+    try {
+        await donor_model.create_donor_request(donor_request)
+        res.status(200).json({message: 'Donation request created'})
+    } catch (e) {
+        res.status(500).json(e)
+    }
+
+
+}
+
+const update_request = async (req, res) => {
+
+}
+
+const delete_request = async (req, res) => {
+
+}
 
 module.exports = {
     get_by_email,
     init,
     update,
+    get_requests,
+    get_request,
+    get_requests,
+    create_request,
+    update_request,
+    delete_request
     // remove
 }
