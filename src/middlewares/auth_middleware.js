@@ -22,6 +22,40 @@ const authenticate_jwt = (req, res, next) => {
     }
 }
 
+const user_authenticated = (req, email, message) => {
+    const token = req.user
+    
+    if(!token){
+        if (message){
+            return {
+                authenticated: false,
+                message: message,
+                status: 401
+            }
+        } else {
+            return {
+                authenticated: false,
+                message: 'No login token provided',
+                status: 401
+            }
+        }
+    }
+
+    if(email && email !== token.email) {
+        return {
+            authenticated: false,
+            message: 'You don\'t have access to this resource',
+            status:401
+        }
+    }
+
+    return {
+        authenticated: true
+    }
+
+}   
+
 module.exports = {
     authenticate_jwt,
+    user_authenticated
 }

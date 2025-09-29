@@ -3,13 +3,14 @@ const jwt = require('jsonwebtoken')
 
 const user_model = require('../models/user_model')
 const { getDateTimeForDB } = require('../utils')
+const { user_authenticated } = require('../middlewares/auth_middleware')
 
 const get_by_email = async (req, res) => {
     const email = req.params.email
     
-    const token = req.user
-    if(token === undefined || email !== token.email) { 
-        res.status(401).json({message: "You don't have access to this resource"})
+    const auth_obj = user_authenticated(req, email)
+    if(!auth_obj.authenticated){
+        return res.status(auth_obj.status).json({message: auth_obj.message})
     }
 
     try {
@@ -90,9 +91,9 @@ const login = async (req, res) => {
 const update = async (req, res) => {
     const email = req.params.email
     
-    const token = req.user
-    if(token === undefined || email !== token.email) { 
-        return res.status(401).json({message: "You don't have access to this resource"})
+    const auth_obj = user_authenticated(req, email)
+    if(!auth_obj.authenticated){
+        return res.status(auth_obj.status).json({message: auth_obj.message})
     }
 
     if (!req.body || Object.keys(req.body).length === 0){
@@ -122,26 +123,27 @@ const update = async (req, res) => {
 
 
 const remove = async (req, res) => {
-     const email = req.params.email
+    const email = req.params.email
+
+    const auth_obj = user_authenticated(req, email)
+    if(!auth_obj.authenticated){
+        return res.status(auth_obj.status).json({message: auth_obj.message})
+    }
+
+    try {
+        const user = await user_model.get_by_email(email)
         
-        try {
-            const user = await user_model.get_by_email(email)
-            
-            // User role
-            if ( user.role === 1) {
-                const token = req.user
-                if(token === undefined || email !== token.email) { 
-                    return res.status(401).json({message: "You don't have access to this resource"})
-                }
-                user_model.remove_donor(user)
-            }
-            
-    
-            res.status(200).json({message: 'user deleted'})
-       } catch (e) {
-            return res.status(404).json({message: `No user found with email: ${email}`})
-    
-       }
+        // User role
+        if ( user.role === 1) {
+            user_model.remove_donor(user)
+        }
+        
+
+        res.status(200).json({message: 'user deleted'})
+    } catch (e) {
+        return res.status(404).json({message: `No user found with email: ${email}`})
+
+    }
 }
 
 

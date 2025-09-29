@@ -281,7 +281,7 @@ describe('user_controller.remove', () => {
         await user_controller.remove(req, res)
 
         expect(res.status).toHaveBeenCalledWith(401)
-        expect(res.json).toHaveBeenCalledWith({message: "You don't have access to this resource"})
+        expect(res.json).toHaveBeenCalledWith({message: "No login token provided"})
     })
 
     it('should return 404 if no user found', async () => {

@@ -1,35 +1,37 @@
 const donor_model = require('../models/donor_model')
 const user_model = require('../models/user_model')
+const { user_authenticated } = require('../middlewares/auth_middleware')
 
 const get_by_email = async (req, res) => {
     const email = req.params.email
-        const token = req.user
-        if(email !== token.email) { 
-            return res.status(401).json({message: "You don't have access to this resource"})
+
+    const auth_obj = user_authenticated(req, email)
+    if(!auth_obj.authenticated){
+        return res.status(auth_obj.status).json({message: auth_obj.message})
+    }
+
+    try {
+        const donor = await donor_model.get_by_email(email)
+        if (donor === undefined) {
+            return res.status(404).json({message: `Donor data not present for user ${email}`})
         }
-    
-        try {
-            const donor = await donor_model.get_by_email(email)
-            if (donor === undefined) {
-                return res.status(404).json({message: `Donor data not present for user ${email}`})
-            }
-    
-            res.status(200).json(donor)
-        } catch (e) {
-            res.status(500).json({message: 'Internal server error'})
-        }
-    
+
+        res.status(200).json(donor)
+    } catch (e) {
+        res.status(500).json({message: 'Internal server error'})
+    }
+
 }
 
 // TODO need input verification
 const init = async (req, res) => {
     const email = req.params.email
         
-        const token = req.user
-        if(email !== token.email) { 
-            res.status(401).json({message: "You don't have access to this resource"})
-        }
-    
+    const auth_obj = user_authenticated(req, email)
+    if(!auth_obj.authenticated){
+        return res.status(auth_obj.status).json({message: auth_obj.message})
+    }
+
         try{
             const user = await user_model.get_by_email(email)
 
@@ -58,9 +60,9 @@ const update = async (req, res) => {
     const email = req.params.email
     const new_city = req.body.city
 
-    const token = req.user
-    if(email !== token.email) { 
-        return res.status(401).json({message: "You don't have access to this resource"})
+    const auth_obj = user_authenticated(req, email)
+    if(!auth_obj.authenticated){
+        return res.status(auth_obj.status).json({message: auth_obj.message})
     }
 
     try {
@@ -75,77 +77,10 @@ const update = async (req, res) => {
     }
 }
 
-const get_requests = async (req, res) => {
-   const token = req.user
-    if(!token) { 
-        return res.status(401).json({message: "You need to be logged in to create a new request"})
-    }
-
-    try{ 
-        const requests = await donor_model.get_requests()
-        
-        if (requests.length === 0) {
-            return res.status(404).json({message: "no requests found"})
-        }
-        else {
-
-            res.status(200).json(requests)
-        }
-
-
-    } catch (e) {
-        res.status(500).json({message: 'internal server error'})
-    }
-}
-
-const get_request = async (req, res) => {
-
-}
-
-const create_request = async (req, res) => {
-    
-    const token = req.user
-    if(!token) { 
-        return res.status(401).json({message: "You need to be logged in to create a new request"})
-    }
-
-    // TODO add input verification
-    const donor_request = {
-        message: req.body.message,
-        hospital: req.body.hospital,
-        donation_point: req.body.donation_point,
-        amount: req.body.amount,
-        patient: req.body.patient,
-        creator: token.id
-    }
-    
-    try {
-        await donor_model.create_donor_request(donor_request)
-        res.status(200).json({message: 'Donation request created'})
-    } catch (e) {
-        res.status(500).json(e)
-    }
-
-
-}
-
-const update_request = async (req, res) => {
-
-}
-
-const delete_request = async (req, res) => {
-
-}
 
 module.exports = {
     get_by_email,
     init,
     update,
-    get_requests,
-    get_request,
-    get_requests,
-    create_request,
-    update_request,
-    delete_request
     // remove
 }

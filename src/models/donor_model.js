@@ -116,35 +116,7 @@ const change_city = async (email, city) => {
     }
 }
 
-const create_donor_request = async (donor_request) => {
-    let connection 
-    try {
-        connection = await mysql.createConnection(connection_data)
-        await connection.query(
-            `INSERT INTO donation_requests (message, hospital, donation_point, amount, patient, creator) VALUES (?, ?, ?, ?, ?, ? )`,
-            [donor_request.message, donor_request.hospital, donor_request.donation_point, donor_request.amount, donor_request.patient, donor_request.creator]
-        )
-    }catch (e) {
-        throw e
-    } finally {
-        if(connection) connection.end()
-    }
-}
 
-const get_requests = async () => {
-    let connection
-    try {
-        connection = await mysql.createConnection(connection_data)
-        const results = await connection.query(
-            'SELECT * FROM donation_requests'
-        )
-        return results[0]
-    } catch (e) {
-        throw e
-    } finally {
-        if(connection) connection.end()
-    }
-}
 
 module.exports = {
     get_all,
@@ -153,6 +125,4 @@ module.exports = {
     change_city,
     create,
     remove,
-    create_donor_request,
-    get_requests
 }
