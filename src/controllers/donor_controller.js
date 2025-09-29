@@ -3,16 +3,15 @@ const user_model = require('../models/user_model')
 
 const get_by_email = async (req, res) => {
     const email = req.params.email
-    
         const token = req.user
         if(email !== token.email) { 
-            res.status(401).json({message: "You don't have access to this resource"})
+            return res.status(401).json({message: "You don't have access to this resource"})
         }
     
         try {
             const donor = await donor_model.get_by_email(email)
             if (donor === undefined) {
-                res.status(404).json({message: `Donor data not present for user ${email}`})
+                return res.status(404).json({message: `Donor data not present for user ${email}`})
             }
     
             res.status(200).json(donor)
@@ -77,11 +76,30 @@ const update = async (req, res) => {
 }
 
 const get_requests = async (req, res) => {
+   const token = req.user
+    if(!token) { 
+        return res.status(401).json({message: "You need to be logged in to create a new request"})
+    }
 
+    try{ 
+        const requests = await donor_model.get_requests()
+        
+        if (requests.length === 0) {
+            return res.status(404).json({message: "no requests found"})
+        }
+        else {
+
+            res.status(200).json(requests)
+        }
+
+
+    } catch (e) {
+        res.status(500).json({message: 'internal server error'})
+    }
 }
 
 const get_request = async (req, res) => {
-    
+
 }
 
 const create_request = async (req, res) => {

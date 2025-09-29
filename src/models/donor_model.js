@@ -131,6 +131,21 @@ const create_donor_request = async (donor_request) => {
     }
 }
 
+const get_requests = async () => {
+    let connection
+    try {
+        connection = await mysql.createConnection(connection_data)
+        const results = await connection.query(
+            'SELECT * FROM donation_requests'
+        )
+        return results[0]
+    } catch (e) {
+        throw e
+    } finally {
+        if(connection) connection.end()
+    }
+}
+
 module.exports = {
     get_all,
     get_by_email,
@@ -139,4 +154,5 @@ module.exports = {
     create,
     remove,
     create_donor_request,
+    get_requests
 }

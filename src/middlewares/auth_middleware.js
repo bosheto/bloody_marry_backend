@@ -9,7 +9,6 @@ const authenticate_jwt = (req, res, next) => {
     }
 
     const token = auth_header.split(' ')[1]
-
     if (!token) {
         return res.status(401).json({ message: 'Token missing'})
     }
