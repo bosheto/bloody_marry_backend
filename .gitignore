@@ -1,3 +1,7 @@
 node_modules/
 .env
 coverage/
+db/
+compose.yaml
+db-setup.sql
+notes.md
