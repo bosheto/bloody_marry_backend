@@ -19,6 +19,7 @@ app.use(express.json())
 app.use(BASE_URL + 'donor' , donor_router)
 app.use(BASE_URL + 'admin', admin_router)
 app.use(BASE_URL + 'user', user_router)
+app.use(BASE_URL + 'donations', donation_router)
 
 // Run server
 app.listen(PORT, () => {

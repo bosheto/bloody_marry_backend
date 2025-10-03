@@ -47,6 +47,10 @@ const create = async (donation) => {
     }
 }
 
+const set_donations = async (donation_id) => {
+
+}
+
 const update = async (donation) => {
     let connection
     try {
@@ -78,7 +82,34 @@ const mark_closed = async (donation_id) => {
 }
 
 const remove = async (donation_id) => {
+    let connection 
+    try {
+        connection = await mysql.createConnection(connection_data)
+        await connection.query(
+            `DELETE FROM donation_request WHERE id = ?`,
+            [donation_id]
+        )
 
+    } catch (e) {
+        throw e
+    } finally {
+        if (connection) connection.end()
+    }
+}
+
+const add_to_donation = async (donation_id, count) => {
+    let connection
+    try {
+        connection = await mysql.createConnection(connection_data)
+        await connection.query(
+            `UPDATE donation_requests SET donations = ? WHERE id = ?`,
+            [count, donation_id]
+        )
+    } catch (e) {
+        throw e
+    } finally {
+        if (connection) connection.end()
+    }
 }
 
 module.exports = {
@@ -87,5 +118,6 @@ module.exports = {
     create,
     update,
     mark_closed,
-    remove
+    remove,
+    add_to_donation
 }
